@@ -29,7 +29,6 @@ describe "Parser" do
     result.should_not be_nil
     
     output_array = result.compile("TemplateName", true)
-    
     output_array[1].should equal_ignoring_spaces("p.push('<p>Static output</p>');")
   end
   
@@ -54,7 +53,7 @@ describe "Parser" do
     result.should_not be_nil
     
     output_array = result.compile("TemplateName", true)
-    output_array.size == 2 # only has header and footer, no body
+    output_array[1].should equal_ignoring_spaces("/* This is a comment */")
   end
   
   it "should parse large example with newlines" do
@@ -66,7 +65,6 @@ describe "Parser" do
       <% }) %>
     </ul>
     EOF
-    puts @parser.failure_reason
     result.should_not be_nil
     
     output = result.compile("TemplateName")
@@ -76,6 +74,7 @@ describe "Parser" do
         var p = [];
         with(options) {
           p.push('<ul>');
+          /* Loop through each city */
           p.push('');
           $.each(cities, function() {
             p.push('<li>');
@@ -89,8 +88,24 @@ describe "Parser" do
     EOF
   end
   
+  it "should escape left and right delimeters inside of tag content" do
+    result = @parser.parse("<% console.log('Example: <%% puts 'test' %%>') %>")
+    result.should_not be_nil, @parser.failure_reason
+    
+    output_array = result.compile("TemplateName", true)
+    output_array[1].should equal_ignoring_spaces("console.log('Example: <% puts 'test' %>')")
+  end
+  
+  it "should escape left and right delimeters outside of tag content" do
+    result = @parser.parse("<%% this is a test %%>")
+    result.should_not be_nil, @parser.failure_reason
+    
+    output_array = result.compile("TemplateName", true)
+    output_array[1].should equal_ignoring_spaces("p.push('<% this is a test %>');")
+  end
+  
   it "should escape static content in output javascript"
   it "should html escape output by default"
   it "should add namespaces"
-  it "should escape left and right delimeters"
+  
 end

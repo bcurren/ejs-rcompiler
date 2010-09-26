@@ -14,7 +14,7 @@ module Ejs
           
           # Append function body
           elements.each do |element|
-            value = element.compile
+            value = element.text_value
             results.push(value) if value
           end
           
@@ -31,59 +31,79 @@ module Ejs
     end
   
     rule content
-      (output_content / comment / execute_content / static_content)
+      output_content / comment / execute_content / static_content
     end
   
     rule static_content
-      (!'<%' !'%>' . )+ {
-        def compile
-          "p.push('#{text_value}');"
-        end
-      }
+       (right_delimeter_escaped / left_delimeter_escaped / unescaped_static_content)+ {
+         def text_value
+           results = []
+           elements.each do |element|
+             results.push(element.text_value)
+           end
+           "p.push('#{results.join('')}');"
+         end
+       }
+    end
+    
+    rule unescaped_static_content
+      (!'<%%' !'%%>' !'<%' !'%>' .)+
     end
   
     rule execute_content
-      left_delimeter tag_content right_delimeter {
-        def compile
+      '<%' tag_content '%>' {
+        def text_value
           tag_content.text_value
         end
       }
     end
   
     rule output_content
-      equal_delimeter tag_content right_delimeter {
-        def compile
+      '<%=' tag_content '%>' {
+        def text_value
           "p.push(#{tag_content.text_value.strip});"
         end
       }
     end
   
     rule comment
-      comment_delimeter tag_content right_delimeter {
-        def compile
-          nil
+      '<%#' tag_content '%>' {
+        def text_value
+          "/* #{tag_content.text_value} */"
         end
       }
     end
   
     rule tag_content
-      (!'%>' . )*
+      (right_delimeter_escaped / left_delimeter_escaped / unescape_content)* {
+        def text_value
+          results = []
+          elements.each do |element|
+            results.push(element.text_value)
+          end
+          results.join("")
+        end
+      }
     end
-  
-    rule equal_delimeter
-      '<%='
+    
+    rule unescape_content
+      (!'%>' !'%%>' !'<%%' .)+
     end
-  
-    rule comment_delimeter
-      '<%#'
+    
+    rule right_delimeter_escaped
+      '%%>' {
+        def text_value
+          '%>'
+        end
+      }
     end
-  
-    rule left_delimeter
-      '<%'
-    end
-  
-    rule right_delimeter
-      '%>'
+    
+    rule left_delimeter_escaped
+      '<%%' {
+        def text_value
+          '<%'
+        end
+      }
     end
   end
 end
