@@ -106,6 +106,9 @@ describe "Parser" do
   
   it "should escape static content in output javascript"
   it "should html escape output by default"
-  it "should add namespaces"
+  # out.push("<ul>\n  \n  ");
   
+  it "should add namespaces"
+  # or = or || {};
+  # or.ui = or.ui || {};
 end
