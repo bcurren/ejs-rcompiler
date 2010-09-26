@@ -43,3 +43,17 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+PARSER_FILE="lib/ejs/grammar.rb"
+GRAMMAR_FILE="lib/ejs/grammar.treetop"
+
+namespace :treetop do
+  desc "Generate parser from treetop grammar."
+  task :generate => PARSER_FILE
+end
+
+file PARSER_FILE => GRAMMAR_FILE do |t|
+  require 'treetop'
+  compiler = Treetop::Compiler::GrammarCompiler.new
+  compiler.compile(t.prerequisites[0], t.name)
+end

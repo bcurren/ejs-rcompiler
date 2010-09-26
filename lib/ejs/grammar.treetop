@@ -1,0 +1,89 @@
+module Ejs
+  grammar Grammar
+    rule program
+      content* {
+        def compile(template_name, array = false)
+          results = []
+          
+          # Append function header
+          results.push <<-EOF
+            #{template_name}.template = function(options) {
+              var p = [];
+              with(options) { 
+          EOF
+          
+          # Append function body
+          elements.each do |element|
+            value = element.compile
+            results.push(value) if value
+          end
+          
+          # Append function footer
+          results.push <<-EOF
+              }
+              return out.join('');
+            }
+          EOF
+          
+          array ? results : results.join("\n")
+        end
+      }
+    end
+  
+    rule content
+      (output_content / comment / execute_content / static_content)
+    end
+  
+    rule static_content
+      (!'<%' !'%>' . )+ {
+        def compile
+          "p.push('#{text_value}');"
+        end
+      }
+    end
+  
+    rule execute_content
+      left_delimeter tag_content right_delimeter {
+        def compile
+          tag_content.text_value
+        end
+      }
+    end
+  
+    rule output_content
+      equal_delimeter tag_content right_delimeter {
+        def compile
+          "p.push(#{tag_content.text_value.strip});"
+        end
+      }
+    end
+  
+    rule comment
+      comment_delimeter tag_content right_delimeter {
+        def compile
+          nil
+        end
+      }
+    end
+  
+    rule tag_content
+      (!'%>' . )*
+    end
+  
+    rule equal_delimeter
+      '<%='
+    end
+  
+    rule comment_delimeter
+      '<%#'
+    end
+  
+    rule left_delimeter
+      '<%'
+    end
+  
+    rule right_delimeter
+      '%>'
+    end
+  end
+end
