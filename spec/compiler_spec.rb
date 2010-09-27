@@ -59,12 +59,12 @@ describe "Compiler" do
   
   it "should compile a source file to a target file" do
     fixtures = "#{File.dirname(__FILE__)}/fixtures"
-    target_file = "/tmp/or.ui.Cities.js"
-    expected_target_file = "#{fixtures}/or.ui.Cities.js"
+    target_file = "/tmp/Cities.js"
+    expected_target_file = "#{fixtures}/Cities.js"
     
     FileUtils.rm(target_file) if File.exist?(target_file)
     
-    @compiler.compile("#{fixtures}/or.ui.Cities.ejs", target_file)
+    @compiler.compile("#{fixtures}/Cities.ejs", "or.ui", target_file)
     File.open(target_file).read.should == File.open(expected_target_file).read
   end
 end
