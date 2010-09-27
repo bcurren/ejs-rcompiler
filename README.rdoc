@@ -1,6 +1,28 @@
 = ejs-rcompiler
 
-Description goes here.
+A simple ruby compiler that compiles an ejs file to js. Here is an example usage:
+
+== In file named or.ui.Cities.ejs
+<ul>
+  <%# Loop through each city %>
+  <% $.each(cities, function() { %>
+  <li><%= this.name %></li>
+  <% }) %>
+</ul>
+
+== Compile the file like so
+compiler = Ejs::Compiler.new
+compiler.compile(ejs_file)
+
+This will create a .js file with a JavaScript class name that matches the file name.
+
+== You can then require the output js file as such.
+<script src="/javascripts/or.ui.Cities.js"></script>
+<script>
+  document.body.innerHTML = or.ui.Cities.template({
+    cities: [{ name: "Paris" }, { name: "Mountain View" }, { name: "Las Vegas" }]
+  });
+</script>
 
 == Note on Patches/Pull Requests
  
