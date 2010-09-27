@@ -9,34 +9,6 @@ module Ejs
       @root ||= :program
     end
 
-    module Program0
-      def compile(template_name, array = false)
-        results = []
-        
-        # Append function header
-        results.push <<-EOF
-          #{template_name}.template = function(options) {
-            var p = [];
-            with(options) { 
-        EOF
-        
-        # Append function body
-        elements.each do |element|
-          value = element.text_value
-          results.push(value) if value
-        end
-        
-        # Append function footer
-        results.push <<-EOF
-            }
-            return out.join('');
-          }
-        EOF
-        
-        array ? results : results.join("\n")
-      end
-    end
-
     def _nt_program
       start_index = index
       if node_cache[:program].has_key?(index)
@@ -50,7 +22,29 @@ module Ejs
 
       s0, i0 = [], index
       loop do
-        r1 = _nt_content
+        i1 = index
+        r2 = _nt_expression
+        if r2
+          r1 = r2
+        else
+          r3 = _nt_comment
+          if r3
+            r1 = r3
+          else
+            r4 = _nt_scriplet
+            if r4
+              r1 = r4
+            else
+              r5 = _nt_static_content
+              if r5
+                r1 = r5
+              else
+                @index = i1
+                r1 = nil
+              end
+            end
+          end
+        end
         if r1
           s0 << r1
         else
@@ -58,17 +52,33 @@ module Ejs
         end
       end
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-      r0.extend(Program0)
 
       node_cache[:program][start_index] = r0
 
       r0
     end
 
-    def _nt_content
+    module Expression0
+      def script_content
+        elements[1]
+      end
+
+    end
+
+    module Expression1
+      def node_type
+        "expression"
+      end
+      
+      def text_value
+        script_content.text_value
+      end
+    end
+
+    def _nt_expression
       start_index = index
-      if node_cache[:content].has_key?(index)
-        cached = node_cache[:content][index]
+      if node_cache[:expression].has_key?(index)
+        cached = node_cache[:expression][index]
         if cached
           cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
           @index = cached.interval.end
@@ -76,42 +86,182 @@ module Ejs
         return cached
       end
 
-      i0 = index
-      r1 = _nt_output_content
-      if r1
-        r0 = r1
+      i0, s0 = index, []
+      if has_terminal?('<%=', false, index)
+        r1 = instantiate_node(SyntaxNode,input, index...(index + 3))
+        @index += 3
       else
-        r2 = _nt_comment
+        terminal_parse_failure('<%=')
+        r1 = nil
+      end
+      s0 << r1
+      if r1
+        r2 = _nt_script_content
+        s0 << r2
         if r2
-          r0 = r2
-        else
-          r3 = _nt_execute_content
-          if r3
-            r0 = r3
+          if has_terminal?('%>', false, index)
+            r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+            @index += 2
           else
-            r4 = _nt_static_content
-            if r4
-              r0 = r4
-            else
-              @index = i0
-              r0 = nil
-            end
+            terminal_parse_failure('%>')
+            r3 = nil
           end
+          s0 << r3
         end
       end
+      if s0.last
+        r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+        r0.extend(Expression0)
+        r0.extend(Expression1)
+      else
+        @index = i0
+        r0 = nil
+      end
 
-      node_cache[:content][start_index] = r0
+      node_cache[:expression][start_index] = r0
+
+      r0
+    end
+
+    module Comment0
+      def script_content
+        elements[1]
+      end
+
+    end
+
+    module Comment1
+      def node_type
+        "comment"
+      end
+      
+      def text_value
+        script_content.text_value
+      end
+    end
+
+    def _nt_comment
+      start_index = index
+      if node_cache[:comment].has_key?(index)
+        cached = node_cache[:comment][index]
+        if cached
+          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+          @index = cached.interval.end
+        end
+        return cached
+      end
+
+      i0, s0 = index, []
+      if has_terminal?('<%#', false, index)
+        r1 = instantiate_node(SyntaxNode,input, index...(index + 3))
+        @index += 3
+      else
+        terminal_parse_failure('<%#')
+        r1 = nil
+      end
+      s0 << r1
+      if r1
+        r2 = _nt_script_content
+        s0 << r2
+        if r2
+          if has_terminal?('%>', false, index)
+            r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+            @index += 2
+          else
+            terminal_parse_failure('%>')
+            r3 = nil
+          end
+          s0 << r3
+        end
+      end
+      if s0.last
+        r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+        r0.extend(Comment0)
+        r0.extend(Comment1)
+      else
+        @index = i0
+        r0 = nil
+      end
+
+      node_cache[:comment][start_index] = r0
+
+      r0
+    end
+
+    module Scriplet0
+      def script_content
+        elements[1]
+      end
+
+    end
+
+    module Scriplet1
+      def node_type
+        "scriplet"
+      end
+      
+      def text_value
+        script_content.text_value
+      end
+    end
+
+    def _nt_scriplet
+      start_index = index
+      if node_cache[:scriplet].has_key?(index)
+        cached = node_cache[:scriplet][index]
+        if cached
+          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+          @index = cached.interval.end
+        end
+        return cached
+      end
+
+      i0, s0 = index, []
+      if has_terminal?('<%', false, index)
+        r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
+        @index += 2
+      else
+        terminal_parse_failure('<%')
+        r1 = nil
+      end
+      s0 << r1
+      if r1
+        r2 = _nt_script_content
+        s0 << r2
+        if r2
+          if has_terminal?('%>', false, index)
+            r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+            @index += 2
+          else
+            terminal_parse_failure('%>')
+            r3 = nil
+          end
+          s0 << r3
+        end
+      end
+      if s0.last
+        r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+        r0.extend(Scriplet0)
+        r0.extend(Scriplet1)
+      else
+        @index = i0
+        r0 = nil
+      end
+
+      node_cache[:scriplet][start_index] = r0
 
       r0
     end
 
     module StaticContent0
+      def node_type
+        "static_content"
+      end
+
       def text_value
-        results = []
-        elements.each do |element|
-          results.push(element.text_value)
-        end
-        "p.push('#{results.join('')}');"
+        elements.map do |element|
+          element.text_value
+        end.join('')
       end
     end
 
@@ -161,6 +311,121 @@ module Ejs
       end
 
       node_cache[:static_content][start_index] = r0
+
+      r0
+    end
+
+    module ScriptContent0
+      def text_value
+        elements.map do |element|
+          element.text_value
+        end.join('')
+      end
+    end
+
+    def _nt_script_content
+      start_index = index
+      if node_cache[:script_content].has_key?(index)
+        cached = node_cache[:script_content][index]
+        if cached
+          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+          @index = cached.interval.end
+        end
+        return cached
+      end
+
+      s0, i0 = [], index
+      loop do
+        i1 = index
+        r2 = _nt_right_delimeter_escaped
+        if r2
+          r1 = r2
+        else
+          r3 = _nt_left_delimeter_escaped
+          if r3
+            r1 = r3
+          else
+            r4 = _nt_unescape_script_content
+            if r4
+              r1 = r4
+            else
+              @index = i1
+              r1 = nil
+            end
+          end
+        end
+        if r1
+          s0 << r1
+        else
+          break
+        end
+      end
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(ScriptContent0)
+
+      node_cache[:script_content][start_index] = r0
+
+      r0
+    end
+
+    module RightDelimeterEscaped0
+      def text_value
+        '%>'
+      end
+    end
+
+    def _nt_right_delimeter_escaped
+      start_index = index
+      if node_cache[:right_delimeter_escaped].has_key?(index)
+        cached = node_cache[:right_delimeter_escaped][index]
+        if cached
+          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+          @index = cached.interval.end
+        end
+        return cached
+      end
+
+      if has_terminal?('%%>', false, index)
+        r0 = instantiate_node(SyntaxNode,input, index...(index + 3))
+        r0.extend(RightDelimeterEscaped0)
+        @index += 3
+      else
+        terminal_parse_failure('%%>')
+        r0 = nil
+      end
+
+      node_cache[:right_delimeter_escaped][start_index] = r0
+
+      r0
+    end
+
+    module LeftDelimeterEscaped0
+      def text_value
+        '<%'
+      end
+    end
+
+    def _nt_left_delimeter_escaped
+      start_index = index
+      if node_cache[:left_delimeter_escaped].has_key?(index)
+        cached = node_cache[:left_delimeter_escaped][index]
+        if cached
+          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+          @index = cached.interval.end
+        end
+        return cached
+      end
+
+      if has_terminal?('<%%', false, index)
+        r0 = instantiate_node(SyntaxNode,input, index...(index + 3))
+        r0.extend(LeftDelimeterEscaped0)
+        @index += 3
+      else
+        terminal_parse_failure('<%%')
+        r0 = nil
+      end
+
+      node_cache[:left_delimeter_escaped][start_index] = r0
 
       r0
     end
@@ -283,251 +548,13 @@ module Ejs
       r0
     end
 
-    module ExecuteContent0
-      def tag_content
-        elements[1]
-      end
-
+    module UnescapeScriptContent0
     end
 
-    module ExecuteContent1
-      def text_value
-        tag_content.text_value
-      end
-    end
-
-    def _nt_execute_content
+    def _nt_unescape_script_content
       start_index = index
-      if node_cache[:execute_content].has_key?(index)
-        cached = node_cache[:execute_content][index]
-        if cached
-          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-          @index = cached.interval.end
-        end
-        return cached
-      end
-
-      i0, s0 = index, []
-      if has_terminal?('<%', false, index)
-        r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
-        @index += 2
-      else
-        terminal_parse_failure('<%')
-        r1 = nil
-      end
-      s0 << r1
-      if r1
-        r2 = _nt_tag_content
-        s0 << r2
-        if r2
-          if has_terminal?('%>', false, index)
-            r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
-            @index += 2
-          else
-            terminal_parse_failure('%>')
-            r3 = nil
-          end
-          s0 << r3
-        end
-      end
-      if s0.last
-        r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-        r0.extend(ExecuteContent0)
-        r0.extend(ExecuteContent1)
-      else
-        @index = i0
-        r0 = nil
-      end
-
-      node_cache[:execute_content][start_index] = r0
-
-      r0
-    end
-
-    module OutputContent0
-      def tag_content
-        elements[1]
-      end
-
-    end
-
-    module OutputContent1
-      def text_value
-        "p.push(#{tag_content.text_value.strip});"
-      end
-    end
-
-    def _nt_output_content
-      start_index = index
-      if node_cache[:output_content].has_key?(index)
-        cached = node_cache[:output_content][index]
-        if cached
-          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-          @index = cached.interval.end
-        end
-        return cached
-      end
-
-      i0, s0 = index, []
-      if has_terminal?('<%=', false, index)
-        r1 = instantiate_node(SyntaxNode,input, index...(index + 3))
-        @index += 3
-      else
-        terminal_parse_failure('<%=')
-        r1 = nil
-      end
-      s0 << r1
-      if r1
-        r2 = _nt_tag_content
-        s0 << r2
-        if r2
-          if has_terminal?('%>', false, index)
-            r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
-            @index += 2
-          else
-            terminal_parse_failure('%>')
-            r3 = nil
-          end
-          s0 << r3
-        end
-      end
-      if s0.last
-        r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-        r0.extend(OutputContent0)
-        r0.extend(OutputContent1)
-      else
-        @index = i0
-        r0 = nil
-      end
-
-      node_cache[:output_content][start_index] = r0
-
-      r0
-    end
-
-    module Comment0
-      def tag_content
-        elements[1]
-      end
-
-    end
-
-    module Comment1
-      def text_value
-        "/* #{tag_content.text_value} */"
-      end
-    end
-
-    def _nt_comment
-      start_index = index
-      if node_cache[:comment].has_key?(index)
-        cached = node_cache[:comment][index]
-        if cached
-          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-          @index = cached.interval.end
-        end
-        return cached
-      end
-
-      i0, s0 = index, []
-      if has_terminal?('<%#', false, index)
-        r1 = instantiate_node(SyntaxNode,input, index...(index + 3))
-        @index += 3
-      else
-        terminal_parse_failure('<%#')
-        r1 = nil
-      end
-      s0 << r1
-      if r1
-        r2 = _nt_tag_content
-        s0 << r2
-        if r2
-          if has_terminal?('%>', false, index)
-            r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
-            @index += 2
-          else
-            terminal_parse_failure('%>')
-            r3 = nil
-          end
-          s0 << r3
-        end
-      end
-      if s0.last
-        r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-        r0.extend(Comment0)
-        r0.extend(Comment1)
-      else
-        @index = i0
-        r0 = nil
-      end
-
-      node_cache[:comment][start_index] = r0
-
-      r0
-    end
-
-    module TagContent0
-      def text_value
-        results = []
-        elements.each do |element|
-          results.push(element.text_value)
-        end
-        results.join("")
-      end
-    end
-
-    def _nt_tag_content
-      start_index = index
-      if node_cache[:tag_content].has_key?(index)
-        cached = node_cache[:tag_content][index]
-        if cached
-          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-          @index = cached.interval.end
-        end
-        return cached
-      end
-
-      s0, i0 = [], index
-      loop do
-        i1 = index
-        r2 = _nt_right_delimeter_escaped
-        if r2
-          r1 = r2
-        else
-          r3 = _nt_left_delimeter_escaped
-          if r3
-            r1 = r3
-          else
-            r4 = _nt_unescape_content
-            if r4
-              r1 = r4
-            else
-              @index = i1
-              r1 = nil
-            end
-          end
-        end
-        if r1
-          s0 << r1
-        else
-          break
-        end
-      end
-      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-      r0.extend(TagContent0)
-
-      node_cache[:tag_content][start_index] = r0
-
-      r0
-    end
-
-    module UnescapeContent0
-    end
-
-    def _nt_unescape_content
-      start_index = index
-      if node_cache[:unescape_content].has_key?(index)
-        cached = node_cache[:unescape_content][index]
+      if node_cache[:unescape_script_content].has_key?(index)
+        cached = node_cache[:unescape_script_content][index]
         if cached
           cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
           @index = cached.interval.end
@@ -599,7 +626,7 @@ module Ejs
         end
         if s1.last
           r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
-          r1.extend(UnescapeContent0)
+          r1.extend(UnescapeScriptContent0)
         else
           @index = i1
           r1 = nil
@@ -617,69 +644,7 @@ module Ejs
         r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
       end
 
-      node_cache[:unescape_content][start_index] = r0
-
-      r0
-    end
-
-    module RightDelimeterEscaped0
-      def text_value
-        '%>'
-      end
-    end
-
-    def _nt_right_delimeter_escaped
-      start_index = index
-      if node_cache[:right_delimeter_escaped].has_key?(index)
-        cached = node_cache[:right_delimeter_escaped][index]
-        if cached
-          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-          @index = cached.interval.end
-        end
-        return cached
-      end
-
-      if has_terminal?('%%>', false, index)
-        r0 = instantiate_node(SyntaxNode,input, index...(index + 3))
-        r0.extend(RightDelimeterEscaped0)
-        @index += 3
-      else
-        terminal_parse_failure('%%>')
-        r0 = nil
-      end
-
-      node_cache[:right_delimeter_escaped][start_index] = r0
-
-      r0
-    end
-
-    module LeftDelimeterEscaped0
-      def text_value
-        '<%'
-      end
-    end
-
-    def _nt_left_delimeter_escaped
-      start_index = index
-      if node_cache[:left_delimeter_escaped].has_key?(index)
-        cached = node_cache[:left_delimeter_escaped][index]
-        if cached
-          cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-          @index = cached.interval.end
-        end
-        return cached
-      end
-
-      if has_terminal?('<%%', false, index)
-        r0 = instantiate_node(SyntaxNode,input, index...(index + 3))
-        r0.extend(LeftDelimeterEscaped0)
-        @index += 3
-      else
-        terminal_parse_failure('<%%')
-        r0 = nil
-      end
-
-      node_cache[:left_delimeter_escaped][start_index] = r0
+      node_cache[:unescape_script_content][start_index] = r0
 
       r0
     end

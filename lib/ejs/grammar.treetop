@@ -1,93 +1,67 @@
 module Ejs
   grammar Grammar
     rule program
-      content* {
-        def compile(template_name, array = false)
-          results = []
-          
-          # Append function header
-          results.push <<-EOF
-            #{template_name}.template = function(options) {
-              var p = [];
-              with(options) { 
-          EOF
-          
-          # Append function body
-          elements.each do |element|
-            value = element.text_value
-            results.push(value) if value
-          end
-          
-          # Append function footer
-          results.push <<-EOF
-              }
-              return out.join('');
-            }
-          EOF
-          
-          array ? results : results.join("\n")
-        end
-      }
-    end
-  
-    rule content
-      output_content / comment / execute_content / static_content
-    end
-  
-    rule static_content
-       (right_delimeter_escaped / left_delimeter_escaped / unescaped_static_content)+ {
-         def text_value
-           results = []
-           elements.each do |element|
-             results.push(element.text_value)
-           end
-           "p.push('#{results.join('')}');"
-         end
-       }
+      (expression / comment / scriplet / static_content)*
     end
     
-    rule unescaped_static_content
-      (!'<%%' !'%%>' !'<%' !'%>' .)+
-    end
-  
-    rule execute_content
-      '<%' tag_content '%>' {
+    rule expression
+      '<%=' script_content '%>' {
+        def node_type
+          "expression"
+        end
+        
         def text_value
-          tag_content.text_value
+          script_content.text_value
         end
       }
     end
-  
-    rule output_content
-      '<%=' tag_content '%>' {
-        def text_value
-          "p.push(#{tag_content.text_value.strip});"
-        end
-      }
-    end
-  
+    
     rule comment
-      '<%#' tag_content '%>' {
-        def text_value
-          "/* #{tag_content.text_value} */"
+      '<%#' script_content '%>' {
+        def node_type
+          "comment"
         end
-      }
-    end
-  
-    rule tag_content
-      (right_delimeter_escaped / left_delimeter_escaped / unescape_content)* {
+        
         def text_value
-          results = []
-          elements.each do |element|
-            results.push(element.text_value)
-          end
-          results.join("")
+          script_content.text_value
         end
       }
     end
     
-    rule unescape_content
-      (!'%>' !'%%>' !'<%%' .)+
+    rule scriplet
+      '<%' script_content '%>' {
+        def node_type
+          "scriplet"
+        end
+        
+        def text_value
+          script_content.text_value
+        end
+      }
+    end
+    
+    rule static_content
+      (right_delimeter_escaped / left_delimeter_escaped / unescaped_static_content)+ {
+        def node_type
+          "static_content"
+        end
+
+        def text_value
+          elements.map do |element|
+            element.text_value
+          end.join('')
+        end
+      }
+    end
+    
+    rule script_content
+      (right_delimeter_escaped / left_delimeter_escaped / unescape_script_content)* {
+        def text_value
+          elements.map do |element|
+            element.text_value
+          end.join('')
+        end
+      }
     end
     
     rule right_delimeter_escaped
@@ -104,6 +78,14 @@ module Ejs
           '<%'
         end
       }
+    end
+    
+    rule unescaped_static_content
+      (!'<%%' !'%%>' !'<%' !'%>' .)+
+    end
+    
+    rule unescape_script_content
+      (!'%>' !'%%>' !'<%%' .)+
     end
   end
 end
