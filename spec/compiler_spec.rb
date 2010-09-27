@@ -2,9 +2,9 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require 'tempfile'
 require 'fileutils'
 
-describe "JavaScriptCompiler" do
+describe "Compiler" do
   before(:each) do
-    @compiler = Ejs::JavaScriptCompiler.new
+    @compiler = Ejs::Compiler.new
   end
   
   it "should js_source_from_string function header and footer" do
