@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "ejs-rcompiler"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{ejs to js ruby compiler}
+    gem.summary = %Q{Ejs to Javascript compiler written in Ruby. This allows you to define HTML heavy Javascript components in EJS and compile them down to Javascript functions for later use.}
+    gem.description = %Q{Ejs to Javascript compiler.}
     gem.email = "ben@outright.com"
     gem.homepage = "http://github.com/bcurren/ejs-rcompiler"
     gem.authors = ["Ben Curren"]

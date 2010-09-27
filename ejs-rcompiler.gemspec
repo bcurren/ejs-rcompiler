@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ejs-rcompiler}
-  s.version = "0.0.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ben Curren"]
   s.date = %q{2010-09-27}
-  s.description = %q{ejs to js ruby compiler}
+  s.description = %q{Ejs to Javascript compiler.}
   s.email = %q{ben@outright.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -32,8 +32,8 @@ Gem::Specification.new do |s|
      "lib/ejs/parse_error.rb",
      "lib/ejs/parser.rb",
      "spec/compiler_spec.rb",
-     "spec/fixtures/or.ui.Cities.ejs",
-     "spec/fixtures/or.ui.Cities.js",
+     "spec/fixtures/Cities.ejs",
+     "spec/fixtures/Cities.js",
      "spec/parser_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb"
@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.summary = %q{Ejs to Javascript compiler written in Ruby. This allows you to define HTML heavy Javascript components in EJS and compile them down to Javascript functions for later use.}
   s.test_files = [
     "spec/compiler_spec.rb",
      "spec/parser_spec.rb",
