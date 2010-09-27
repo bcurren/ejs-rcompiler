@@ -19,7 +19,7 @@ This will create a .js file with a JavaScript class name that matches the file n
 == You can then require the output js file as such.
 <script src="/javascripts/or.ui.Cities.js"></script>
 <script>
-  document.body.innerHTML = or.ui.Cities.template({
+  document.body.innerHTML = or.ui.Cities.render({
     cities: [{ name: "Paris" }, { name: "Mountain View" }, { name: "Las Vegas" }]
   });
 </script>

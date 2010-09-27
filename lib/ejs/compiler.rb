@@ -54,7 +54,7 @@ module Ejs
     end
     
     def template_header(buffer, template_name)
-      buffer.push("#{template_name}.template = function(options) {")
+      buffer.push("#{template_name}.render = function(options) {")
       buffer.push("  var p = [];")
       buffer.push("  with(options) {")
     end

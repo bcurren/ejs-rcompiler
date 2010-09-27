@@ -11,7 +11,7 @@ describe "Compiler" do
     compiled = @compiler.js_source_from_string("TemplateName", "", true)
     
     compiled[0].should == "window.TemplateName = window.TemplateName || {};"
-    compiled[1].should == "TemplateName.template = function(options) {"
+    compiled[1].should == "TemplateName.render = function(options) {"
     compiled[2].should == "  var p = [];"
     compiled[3].should == "  with(options) {"
     
@@ -25,7 +25,7 @@ describe "Compiler" do
     compiled[0].should == "window.my = window.my || {};"
     compiled[1].should == "window.my.namespace = window.my.namespace || {};"
     compiled[2].should == "window.my.namespace.MyClass = window.my.namespace.MyClass || {};"
-    compiled[3].should == "my.namespace.MyClass.template = function(options) {"
+    compiled[3].should == "my.namespace.MyClass.render = function(options) {"
   end
   
   it "should js_source_from_string static content" do

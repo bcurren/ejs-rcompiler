@@ -4,7 +4,7 @@
 window.or = window.or || {};
 window.or.ui = window.or.ui || {};
 window.or.ui.Cities = window.or.ui.Cities || {};
-or.ui.Cities.template = function(options) {
+or.ui.Cities.render = function(options) {
   var p = [];
   with(options) {
     p.push('<ul>\n  ');
