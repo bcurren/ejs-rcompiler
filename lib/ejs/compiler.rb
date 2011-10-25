@@ -77,7 +77,7 @@ module Ejs
     def template_footer(buffer)
       buffer.push("  }")
       buffer.push("  return p.join('');")
-      buffer.push("}")
+      buffer.push("};")
     end
     
     def escape(content)
